@@ -27,7 +27,7 @@ export default function SellerBidsPage() {
   useEffect(() => {
     const fetchBids = async () => {
       try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_BACK_END}0/api/bid/bids/mine`, {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_BACK_END}/api/bid/bids/mine`, {
           withCredentials: true,
         })
         setBids(res.data.Bids)
@@ -46,6 +46,7 @@ export default function SellerBidsPage() {
     selected: 'bg-green-500/20 text-green-300',
     rejected: 'bg-red-500/20 text-red-300',
     completed: 'bg-blue-500/20 text-blue-300',
+    in_progress:'bg-gray-800/30 text-gray-200',
     cancelled: 'bg-gray-500/20 text-gray-300',
   }
 

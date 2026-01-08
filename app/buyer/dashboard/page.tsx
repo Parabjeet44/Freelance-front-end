@@ -48,62 +48,82 @@ export default function BuyerDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-blue-600 via-purple-500 to-pink-400 p-10 text-white">
-      <div className="max-w-4xl mx-auto relative">
-        <h1 className="text-4xl font-bold mb-6">Buyer Dashboard</h1>
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold">Buyer Dashboard</h1>
+          <button
+            onClick={handleLogout}
+            className="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full hover:bg-white/30 transition text-white font-semibold shadow-lg hover:shadow-xl"
+          >
+            Logout
+          </button>
+        </div>
 
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          className="absolute top-0 right-0 mt-4 mr-4 bg-white/20 px-4 py-2 cursor-pointer rounded-lg hover:bg-white/30 transition text-white font-medium"
-        >
-          Logout
-        </button>
-
+        {/* Create Project Button */}
         <div className="mb-8">
           <Link
             href="/buyer/projects/new"
-            className="inline-block bg-white/20 px-4 py-2 rounded-lg hover:bg-white/30 transition text-white font-medium"
+            className="inline-block bg-white text-purple-600 px-6 py-3 rounded-full hover:bg-white/90 transition font-bold shadow-lg hover:shadow-xl transform hover:scale-105"
           >
-            Create a New Project
+            + Create New Project
           </Link>
         </div>
 
+        {/* Projects Grid */}
         {projects.length === 0 ? (
-          <p className="text-white/70">You haven’t created any projects yet.</p>
+          <div className="bg-white/10 backdrop-blur-sm p-12 rounded-2xl border border-white/20 text-center">
+            <p className="text-white/70 text-lg">You haven't created any projects yet.</p>
+            <p className="text-white/50 mt-2">Click "Create New Project" to get started!</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {projects.map((project) => (
               <div
                 key={project.id}
-                className="bg-white/10 p-6 rounded-xl border border-white/20 shadow-lg space-y-2"
+                className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-white/15"
               >
-                <h2 className="text-2xl font-semibold">{project.title}</h2>
-                <p className="text-white/80">{project.description}</p>
-                <p className="text-white/70">
-                  Budget: ${project.budgetMin} - ${project.budgetMax}
-                </p>
-                <p className="text-white/70">
-                  Deadline: {new Date(project.deadline).toLocaleDateString()}
-                </p>
+                <h2 className="text-2xl font-bold mb-3">{project.title}</h2>
+                <p className="text-white/80 mb-4 line-clamp-2">{project.description}</p>
+                
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/60"></span>
+                    <p className="text-white/90 font-medium">
+                      ${project.budgetMin.toLocaleString()} - ${project.budgetMax.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/60"></span>
+                    <p className="text-white/90 font-medium">
+                      {new Date(project.deadline).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </div>
 
-                <div className="space-y-1 pt-2">
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-2 pt-4 border-t border-white/20">
                   <Link
                     href={`/buyer/projects/${project.id}`}
-                    className="block underline text-white hover:text-blue-300"
+                    className="flex-1 min-w-fit bg-blue-500/80 hover:bg-blue-500 px-4 py-2 rounded-lg text-center text-white font-semibold transition shadow-md hover:shadow-lg"
                   >
-                    View Project Details
+                    Details
                   </Link>
                   <Link
                     href={`/buyer/projects/${project.id}/bids`}
-                    className="block underline text-white hover:text-blue-300"
+                    className="flex-1 min-w-fit bg-purple-500/80 hover:bg-purple-500 px-4 py-2 rounded-lg text-center text-white font-semibold transition shadow-md hover:shadow-lg"
                   >
-                    View Bids
+                    Bids
                   </Link>
                   <Link
                     href={`/buyer/projects/${project.id}/deliverable`}
-                    className="block underline text-white hover:text-blue-300"
+                    className="flex-1 min-w-fit bg-green-500/80 hover:bg-green-500 px-4 py-2 rounded-lg text-center text-white font-semibold transition shadow-md hover:shadow-lg"
                   >
-                    View Deliverables
+                    Deliverables
                   </Link>
                 </div>
               </div>

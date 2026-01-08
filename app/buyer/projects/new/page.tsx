@@ -3,16 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "../../../../utils/axiosInstance";
-import { z } from "zod";
-import Swal from "sweetalert2";
-
-const projectScheme = z.object({
-  title:z.string(),
-  description:z.string(),
-  budgetMin:z.int(),
-  budgetMax:z.int(),
-  deadline: z.date(),
-})
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -55,9 +45,6 @@ export default function NewProjectPage() {
       router.push("/buyer/dashboard");
     } catch (error: any) {
       console.error("Error posting project:", error);
-      alert(
-        error.response?.data?.message || error.message || JSON.stringify(error)
-      );
     } finally {
       setLoading(false);
     }

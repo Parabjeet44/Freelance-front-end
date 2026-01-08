@@ -46,7 +46,7 @@ export default function UploadDeliverablePage() {
 
     try {
       const res = await axios.post(
-        `${process.env.BACK_END}/api/deliverable/projects/${projectId}/deliverables`,
+        `${process.env.NEXT_PUBLIC_BACK_END}/api/deliverable/projects/${projectId}/deliverables`,
         formData,
         {
           headers: {

@@ -6,7 +6,6 @@ import axios from '../../utils/axiosInstance'
 import { z } from 'zod'
 import Swal from 'sweetalert2'
 
-// Zod schema for form validation
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
@@ -36,30 +35,28 @@ export default function RegisterPage() {
     e.preventDefault()
     setError('')
 
-    // Validate form data with Zod
     const result = registerSchema.safeParse(formData)
     if (!result.success) {
-      // Take the first error from Zod
-      const firstError = result.error.issues[0]?.message || 'Invalid input';
-      setError(firstError);
+      const firstError = result.error.issues[0]?.message || 'Invalid input'
+      setError(firstError)
       return
     }
 
     setLoading(true)
 
     try {
-      const res = await axios.post(
+      await axios.post(
         `${process.env.NEXT_PUBLIC_BACK_END}/api/auth/register`,
         formData
       )
-      Swal.fire("Account Created Successfully!");
+      Swal.fire('Account Created Successfully!')
       router.push('/login')
     } catch (err: any) {
       Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Something went wrong!"
-      });
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Something went wrong!',
+      })
       const message =
         err.response?.data?.message || err.message || 'Registration failed'
       setError(message)

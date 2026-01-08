@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import axios from '../../../../../utils/axiosInstance'
 
@@ -27,7 +27,6 @@ interface Project {
 
 export default function ProjectDetailsPage() {
   const { id } = useParams()
-  const router = useRouter()
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [completing, setCompleting] = useState(false)
@@ -48,7 +47,10 @@ export default function ProjectDetailsPage() {
             { withCredentials: true }
           )
           const deliverable = deliverableRes.data.deliverable
-          deliverableUrl = deliverable?.fileUrl || deliverable?.link || null
+
+          deliverableUrl = deliverable?.fileUrl
+            ? `${process.env.NEXT_PUBLIC_BACK_END}${deliverable.fileUrl}`
+            : deliverable?.link || null
         } catch (deliverableErr: any) {
           console.warn(
             'No deliverable found:',
@@ -71,6 +73,8 @@ export default function ProjectDetailsPage() {
   }, [id])
 
   const markAsCompleted = async () => {
+    if (!project) return
+
     setCompleting(true)
     try {
       await axios.put(
@@ -78,12 +82,15 @@ export default function ProjectDetailsPage() {
         { status: 'COMPLETED' },
         { withCredentials: true }
       )
-      router.refresh()
+
+      // Update UI immediately
+      setProject(prev => (prev ? { ...prev, status: 'COMPLETED' } : prev))
     } catch (err) {
       console.error('Failed to mark as completed:', err)
       alert('Failed to mark as completed')
+    } finally {
+      setCompleting(false)
     }
-    setCompleting(false)
   }
 
   if (loading) {
@@ -106,13 +113,10 @@ export default function ProjectDetailsPage() {
     <div className="min-h-screen bg-gradient-to-tr from-blue-600 via-purple-500 to-pink-400 p-6 flex justify-center">
       <div className="w-full max-w-3xl">
         <div className="backdrop-blur-md bg-white/10 p-8 rounded-3xl shadow-2xl border border-white/20 text-white">
-          <h1 className="text-3xl font-bold mb-4">
-            Project: {project.title}
-          </h1>
+          <h1 className="text-3xl font-bold mb-4">Project: {project.title}</h1>
           <p className="text-white/70 mb-4">{project.description}</p>
           <p className="text-white/60 mb-2">
-            Budget: ${project.budgetMin.toLocaleString()} - $
-            {project.budgetMax.toLocaleString()}
+            Budget: ${project.budgetMin.toLocaleString()} - ${project.budgetMax.toLocaleString()}
           </p>
           <p className="text-white/60 mb-6">
             Deadline: {new Date(project.deadline).toLocaleDateString()}
@@ -120,9 +124,7 @@ export default function ProjectDetailsPage() {
 
           {project.deliverableUrl ? (
             <div className="bg-white/20 p-6 rounded-xl border border-white/20 mb-6">
-              <h2 className="text-xl font-semibold mb-3">
-                Project Deliverable
-              </h2>
+              <h2 className="text-xl font-semibold mb-3">Project Deliverable</h2>
               {project.deliverableUrl.endsWith('.pdf') ? (
                 <iframe
                   src={project.deliverableUrl}
@@ -140,23 +142,21 @@ export default function ProjectDetailsPage() {
               )}
             </div>
           ) : (
-            <p className="text-white/70">
-              No deliverable has been uploaded yet.
-            </p>
+            <p className="text-white/70">No deliverable has been uploaded yet.</p>
           )}
 
-          {project.status !== 'Completed' ? (
+          {project.status === 'COMPLETED' ? (
+            <div className="inline-block bg-green-500/20 text-green-300 px-4 py-2 rounded-full font-semibold mt-4">
+              Completed
+            </div>
+          ) : (
             <button
               onClick={markAsCompleted}
               disabled={completing}
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-bold shadow-lg transition-all"
+              className="bg-green-500 hover:bg-green-600 disabled:opacity-60 disabled:cursor-not-allowed text-white px-6 py-3 rounded-full font-bold shadow-lg transition-all mt-4"
             >
               {completing ? 'Completing...' : 'Mark as Completed'}
             </button>
-          ) : (
-            <p className="text-green-300 font-semibold mt-4">
-              Project already marked as Completed.
-            </p>
           )}
         </div>
       </div>
