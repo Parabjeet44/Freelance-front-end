@@ -47,7 +47,8 @@ export default function RegisterPage() {
     try {
       await axios.post(
         `${process.env.NEXT_PUBLIC_BACK_END}/api/auth/register`,
-        formData
+        formData,
+        {withCredentials:true}
       )
       Swal.fire('Account Created Successfully!')
       router.push('/login')
