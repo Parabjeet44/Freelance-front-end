@@ -11,6 +11,7 @@ const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   role: z.enum(['BUYER', 'SELLER']),
+  mobile: z.string().regex(/^\d{10}$/, 'Mobile number must be 10 digits'),
 })
 
 export default function RegisterPage() {
@@ -20,6 +21,7 @@ export default function RegisterPage() {
     email: '',
     password: '',
     role: 'BUYER',
+    mobile: '', // NEW: Mobile field
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -48,15 +50,21 @@ export default function RegisterPage() {
       await axios.post(
         `${process.env.NEXT_PUBLIC_BACK_END}/api/auth/register`,
         formData,
-        {withCredentials:true}
+        { withCredentials: true }
       )
-      Swal.fire('Account Created Successfully!')
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Account Created Successfully!',
+        confirmButtonColor: '#10b981'
+      })
       router.push('/login')
     } catch (err: any) {
       Swal.fire({
         icon: 'error',
         title: 'Oops...',
-        text: 'Something went wrong!',
+        text: err.response?.data?.message || 'Something went wrong!',
+        confirmButtonColor: '#ef4444'
       })
       const message =
         err.response?.data?.message || err.message || 'Registration failed'
@@ -106,6 +114,23 @@ export default function RegisterPage() {
           />
         </div>
 
+        {/* NEW: Mobile Number Field */}
+        <div className="mb-4">
+          <label className="block text-white font-medium mb-1">
+            Mobile Number <span className="text-white/60 text-sm"></span>
+          </label>
+          <input
+            type="tel"
+            name="mobile"
+            disabled={loading}
+            value={formData.mobile}
+            onChange={handleChange}
+            maxLength={10}
+            className="w-full bg-white/20 text-white px-4 py-2 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-pink-300 placeholder:text-white/70"
+            placeholder="10-digit mobile number"
+          />
+        </div>
+
         <div className="mb-4">
           <label className="block text-white font-medium mb-1">Password</label>
           <input
@@ -141,7 +166,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-white text-pink-600 font-semibold py-2 rounded-lg hover:bg-pink-100 transition-all duration-300 shadow-lg"
+          className="w-full bg-white text-pink-600 font-semibold py-2 rounded-lg hover:bg-pink-100 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Registering...' : 'Register'}
         </button>

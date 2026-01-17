@@ -52,6 +52,12 @@ export default function BuyerDashboard() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold">Buyer Dashboard</h1>
+          <Link
+            href="/settings"
+            className="bg-white/20 backdrop-blur-sm px-6 py-2 left-1/4 relative rounded-full hover:bg-white/30 transition text-white font-semibold shadow-lg hover:shadow-xl"
+          >
+            Settings
+          </Link>
           <button
             onClick={handleLogout}
             className="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full hover:bg-white/30 transition text-white font-semibold shadow-lg hover:shadow-xl"
@@ -85,7 +91,7 @@ export default function BuyerDashboard() {
               >
                 <h2 className="text-2xl font-bold mb-3">{project.title}</h2>
                 <p className="text-white/80 mb-4 line-clamp-2">{project.description}</p>
-                
+
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center gap-2">
                     <span className="text-white/60"></span>

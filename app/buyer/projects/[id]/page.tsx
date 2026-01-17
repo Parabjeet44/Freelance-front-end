@@ -5,6 +5,18 @@ import { useEffect, useState } from 'react'
 import axios from '../../../../utils/axiosInstance'
 import Swal from 'sweetalert2'
 
+interface Deliverable {
+  id: string
+  fileUrl?: string
+  link?: string
+  fileType?: string
+  seller: {
+    id: string
+    name: string
+    email: string
+  }
+}
+
 interface Bid {
   id: string
   sellerName: string
@@ -22,7 +34,7 @@ interface Project {
   budgetMax: number
   deadline: string
   status: string
-  deliverableUrl?: string
+  deliverable?: Deliverable
   bids: Bid[]
 }
 
@@ -43,6 +55,106 @@ export default function ProjectDetailsPage() {
     deadline: ''
   })
 
+  // Render deliverable based on file type
+  const renderDeliverable = (deliverable: Deliverable | undefined) => {
+    if (!deliverable) return null
+
+    // If external link provided
+    if (deliverable.link) {
+      return (
+        <a
+          href={deliverable.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-200 underline hover:text-blue-400 font-semibold"
+        >
+          🔗 Open External Link
+        </a>
+      )
+    }
+
+    // If file uploaded
+    if (deliverable.fileUrl) {
+      const fileType = deliverable.fileType || 'other'
+      const fileUrl = `${process.env.NEXT_PUBLIC_BACK_END}${deliverable.fileUrl}`
+
+      switch (fileType) {
+        case 'pdf':
+          return (
+            <div className="space-y-3">
+              <p className="text-white/80 font-semibold">📄 PDF Document</p>
+              <iframe
+                src={fileUrl}
+                className="w-full h-96 rounded-md border border-white/30"
+                title="PDF Deliverable"
+              />
+              <a
+                href={fileUrl}
+                download
+                className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-lg transition-all"
+              >
+                Download PDF
+              </a>
+            </div>
+          )
+
+        case 'video':
+          return (
+            <div className="space-y-3">
+              <p className="text-white/80 font-semibold">🎥 Video Deliverable</p>
+              <video
+                controls
+                className="w-full rounded-md border border-white/30 bg-black"
+                src={fileUrl}
+              >
+                Your browser does not support the video tag.
+              </video>
+              <a
+                href={fileUrl}
+                download
+                className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-lg transition-all"
+              >
+                Download Video
+              </a>
+            </div>
+          )
+
+        case 'zip':
+          return (
+            <div className="space-y-3">
+              <p className="text-white/80 font-semibold">📦 ZIP Archive</p>
+              <div className="bg-white/10 p-4 rounded-lg border border-white/20">
+                <p className="text-white/70 mb-3">Compressed file ready for download</p>
+                <a
+                  href={fileUrl}
+                  download
+                  className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all"
+                >
+                  📥 Download ZIP File
+                </a>
+              </div>
+            </div>
+          )
+
+        default:
+          return (
+            <div className="space-y-3">
+              <p className="text-white/80 font-semibold">📎 File Deliverable</p>
+              <a
+                href={fileUrl}
+                download
+                className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all"
+              >
+                Download File
+              </a>
+            </div>
+          )
+      }
+    }
+
+    return <p className="text-white/60">No deliverable available</p>
+  }
+
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -51,6 +163,7 @@ export default function ProjectDetailsPage() {
           { withCredentials: true }
         )
         setProject(res.data.project)
+        
         // Initialize edit form with current project data
         setEditForm({
           title: res.data.project.title,
@@ -61,6 +174,12 @@ export default function ProjectDetailsPage() {
         })
       } catch (err) {
         console.error('Error fetching project:', err)
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load project details',
+          confirmButtonColor: '#ef4444'
+        })
       } finally {
         setLoading(false)
       }
@@ -217,16 +336,16 @@ export default function ProjectDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center text-white">
-        Loading...
+      <div className="min-h-screen flex justify-center items-center bg-gradient-to-tr from-blue-600 via-purple-500 to-pink-400">
+        <div className="text-white text-xl">Loading project...</div>
       </div>
     )
   }
 
   if (!project) {
     return (
-      <div className="min-h-screen flex justify-center items-center text-white">
-        Project not found.
+      <div className="min-h-screen flex justify-center items-center bg-gradient-to-tr from-blue-600 via-purple-500 to-pink-400">
+        <div className="text-white text-xl">Project not found.</div>
       </div>
     )
   }
@@ -259,8 +378,11 @@ export default function ProjectDetailsPage() {
               <p className="text-white/60 mb-2">
                 Budget: ${project.budgetMin.toLocaleString()} - ${project.budgetMax.toLocaleString()}
               </p>
-              <p className="text-white/60 mb-6">
+              <p className="text-white/60 mb-2">
                 Deadline: {new Date(project.deadline).toLocaleDateString()}
+              </p>
+              <p className="text-white/60 mb-6">
+                Status: <span className="font-semibold capitalize">{project.status.replace('_', ' ')}</span>
               </p>
             </>
           ) : (
@@ -326,54 +448,37 @@ export default function ProjectDetailsPage() {
                   onClick={handleSaveEdit}
                   className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-bold shadow-lg transition-all"
                 >
-                Save Changes
+                  Save Changes
                 </button>
                 <button
                   onClick={handleCancelEdit}
                   className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-full font-bold shadow-lg transition-all"
                 >
-                Cancel
+                  Cancel
                 </button>
               </div>
             </>
           )}
 
-          {!isEditing && project.deliverableUrl && (
-            <div className="bg-white/20 p-6 rounded-xl border border-white/20 mb-6">
-              <h2 className="text-xl font-semibold mb-3">Project Deliverable</h2>
+         
 
-              {project.deliverableUrl.endsWith('.pdf') ? (
-                <iframe
-                  src={project.deliverableUrl}
-                  className="w-full h-96 rounded-md border border-white/30"
-                ></iframe>
+          {/* Status and Complete Button */}
+          {!isEditing && (
+            <div className="mt-6">
+              {project.status === 'COMPLETED' ? (
+                <div className="inline-block bg-green-500/20 text-green-300 px-4 py-2 rounded-full font-semibold">
+                  ✓ Completed
+                </div>
               ) : (
-                <a
-                  href={project.deliverableUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-200 underline hover:text-blue-400"
+                <button
+                  onClick={markAsCompleted}
+                  disabled={completing}
+                  className="bg-green-500 hover:bg-green-600 disabled:opacity-60 disabled:cursor-not-allowed text-white px-6 py-3 rounded-full font-bold shadow-lg transition-all"
                 >
-                  Download Deliverable
-                </a>
+                  {completing ? 'Completing...' : 'Mark as Completed'}
+                </button>
               )}
             </div>
-          )}
-
-          {!isEditing && (
-            project.status === 'COMPLETED' ? (
-              <div className="inline-block bg-green-500/20 text-green-300 px-4 py-2 rounded-full font-semibold mt-4">
-                Completed
-              </div>
-            ) : (
-              <button
-                onClick={markAsCompleted}
-                disabled={completing}
-                className="bg-green-500 hover:bg-green-600 disabled:opacity-60 disabled:cursor-not-allowed text-white px-6 py-3 rounded-full font-bold shadow-lg transition-all mt-4"
-              >
-                {completing ? 'Completing...' : 'Mark as Completed'}
-              </button>
-            )
           )}
         </div>
       </div>

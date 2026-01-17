@@ -62,6 +62,11 @@ export default function SellerDashboardPage() {
               View All Your Bids
             </Link>
             <button
+              className="px-4 py-2 bg-white/20 rounded-full cursor-pointer hover:bg-white/30 transition text-white font-semibold"
+            >
+              <Link href='/settings'>Settings</Link>
+            </button>
+            <button
               onClick={handleLogout}
               className="px-4 py-2 bg-white/20 rounded-full cursor-pointer hover:bg-white/30 transition text-white font-semibold"
             >
